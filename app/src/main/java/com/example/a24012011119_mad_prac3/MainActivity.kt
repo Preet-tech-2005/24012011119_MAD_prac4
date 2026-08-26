@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextClock
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -22,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var textAlarm: TextView
     lateinit var cardSetAlarm: MaterialCardView
     lateinit var alarmTimeValue: TextView
-    var pendingIntent: PendingIntent?=null
+
     lateinit var alarmManager: AlarmManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,7 +47,7 @@ class MainActivity : AppCompatActivity() {
             showTimedialog()
         }
         findViewById<MaterialButton>(R.id.btnCancelAlarm).setOnClickListener {
-            cancelAlarm()
+            setAlarm(-1, AlarmBroadcastReceiver.STOP_VAL)
         }
     }
     private fun showTimedialog(){
@@ -60,14 +61,18 @@ class MainActivity : AppCompatActivity() {
         )
         picker.show()
     }
-    private fun checkExactAlarmPermission(){
+    private fun checkExactAlarmPermission(): Boolean{
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
             if (!alarmManager.canScheduleExactAlarms()) {
                 val intent = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                 startActivity(intent)
+                return false
             }
+            else
+                return true
         }
+        return false
     }
     private fun sendDialogDataToActivity(hour:Int,minute:Int){
         val calendar=java.util.Calendar.getInstance()
@@ -78,24 +83,37 @@ class MainActivity : AppCompatActivity() {
         cardSetAlarm.visibility= View.VISIBLE
         val sdf = SimpleDateFormat("hh:mm:ss a", Locale.getDefault())
         alarmTimeValue.text = sdf.format(calendar.time)
+        setAlarm(calendar.timeInMillis, AlarmBroadcastReceiver.START_VAL)
 
+    }
+
+    fun setAlarm(timeInMillis:Long,start_stop:String){
         val intent= Intent(this, AlarmBroadcastReceiver::class.java)
-        intent.putExtra(AlarmBroadcastReceiver.SERVICE_KEY, AlarmBroadcastReceiver.START_VAL)
 
-        pendingIntent= PendingIntent.getBroadcast(this,0,intent, PendingIntent.FLAG_IMMUTABLE)
+        if(start_stop == AlarmBroadcastReceiver.START_VAL){
+            intent.putExtra(AlarmBroadcastReceiver.SERVICE_KEY, AlarmBroadcastReceiver.START_VAL)
 
-        pendingIntent?.let {
-            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, it)
+            val pendingIntent= PendingIntent.getBroadcast(this,0,intent, PendingIntent.FLAG_IMMUTABLE)
+            if(checkExactAlarmPermission())
+            {
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, timeInMillis, pendingIntent)
+                Toast.makeText(this, "Alarm set", Toast.LENGTH_LONG).show()
+            }
+            else{
+                Toast.makeText(this, "No permission to set Alarm", Toast.LENGTH_LONG).show()
+            }
+        }
+        else if(start_stop == AlarmBroadcastReceiver.STOP_VAL)
+        {
+            intent.putExtra(AlarmBroadcastReceiver.SERVICE_KEY, AlarmBroadcastReceiver.STOP_VAL)
+
+            val pendingIntent= PendingIntent.getBroadcast(this,0,intent, PendingIntent.FLAG_IMMUTABLE)
+            sendBroadcast(intent)
+            pendingIntent?.let { alarmManager.cancel(it) }
+            cardSetAlarm.visibility= View.GONE
+            alarmTimeValue.text="--:-- --"
         }
     }
 
-    private fun cancelAlarm(){
-        val intent= Intent(this, AlarmBroadcastReceiver::class.java)
-        intent.putExtra(AlarmBroadcastReceiver.SERVICE_KEY, AlarmBroadcastReceiver.STOP_VAL)
-        sendBroadcast(intent)
 
-        pendingIntent?.let { alarmManager.cancel(it) }
-        cardSetAlarm.visibility= View.GONE
-        alarmTimeValue.text="--:-- --"
-    }
 }

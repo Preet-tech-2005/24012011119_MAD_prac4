@@ -29,9 +29,9 @@
             android:exported="false" />
 
         <receiver
-            android:name="MyReceiver"
+            android:name=".AlarmBroadcastReceiver"
             android:enabled="true"
-            android:exported="false"></receiver>
+            android:exported="false"/>
     </application>
 
 </manifest>
