@@ -91,7 +91,7 @@ app
 
 The home screen displays the current digital time along with **Create Alarm** and **Cancel Alarm** buttons.
 
-![Home Screen](.png)
+![CreateAlarm](Screenshots/CreateAlarm.png)
 
 ---
 
@@ -99,7 +99,7 @@ The home screen displays the current digital time along with **Create Alarm** an
 
 The application requests permission to schedule exact alarms before creating an exact alarm.
 
-![Alarm Permission](alrampermission.png)
+![Alarm Permission](Screenshots/alrampermission.png)
 
 ---
 
@@ -107,7 +107,7 @@ The application requests permission to schedule exact alarms before creating an 
 
 The user selects the desired alarm time using the Android **TimePicker** dialog.
 
-![Time Picker](alramset1.png)
+![TimePickre](Screenshots/TimePickre.png)
 
 ---
 
@@ -115,7 +115,7 @@ The user selects the desired alarm time using the Android **TimePicker** dialog.
 
 After selecting the required time, the alarm is successfully created and the selected alarm time is displayed on the screen.
 
-![Alarm Created](alramset2.png)
+![SetAlarm](Screenshots/SetAlarm.png)
 
 ---
 
